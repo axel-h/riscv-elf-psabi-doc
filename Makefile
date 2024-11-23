@@ -17,6 +17,7 @@ $(NAME).pdf: $(NAME).adoc $(wildcard *.adoc) resources/themes/risc-v_spec-pdf.ym
 	    -a monthyear="$(MONTHYEAR)" \
 	    -a pdf-style=resources/themes/risc-v_spec-pdf.yml \
 	    -a pdf-fontsdir=resources/fonts \
+	    --failure-level=ERROR \
 	    -v \
 	    $< -o $@
 
