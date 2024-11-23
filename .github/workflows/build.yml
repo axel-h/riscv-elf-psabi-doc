@@ -43,7 +43,7 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "RELEASE_DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+        run: echo "RELEASE_DATE=$(date --utc +'%Y%m%d')" >> $GITHUB_OUTPUT
 
       - name: Create release
         id: create_release
