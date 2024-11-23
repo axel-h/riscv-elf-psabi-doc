@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.2.2
 
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install -y make ruby
@@ -25,10 +25,12 @@ jobs:
         run: make
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4.4.3
         with:
-          name: riscv-abi.pdf
-          path: riscv-abi.pdf
+          name: riscv-abi-manual.zip
+          path: |
+            build/riscv-abi.pdf
+            build/riscv-abi.html
 
   draft-release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -36,36 +38,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: riscv-abi.pdf
-          path: ./
+        uses: actions/download-artifact@v4.1.8
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date -u +'%Y%m%d')"
+        run: echo "RELEASE_DATE=$(date --utc +'%Y%m%d')" >> $GITHUB_OUTPUT
 
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2.1.0
         with:
-          tag_name: draft-${{ steps.date.outputs.date }}-${{ github.sha }}
-          release_name: Draft release ${{ steps.date.outputs.date }}
-          body: Latest snapshot (${{ github.sha }})
-          prerelease: true
-
-      - name: Upload release asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: riscv-abi.pdf
-          asset_name: riscv-abi.pdf
-          asset_content_type: application/pdf
+          draft: true
+          name: Draft release ${{ steps.date.outputs.RELEASE_DATE }}
+          body: Snapshot (${{ github.sha }})
+          files: |
+            riscv-abi-manual.zip/riscv-abi.pdf
+            riscv-abi-manual.zip/riscv-abi.html
 
   release:
     if: github.event_name == 'release' && github.event.action == 'created'
@@ -73,18 +61,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: riscv-abi.pdf
-          path: ./
+        uses: actions/download-artifact@v4.1.8
 
-      - name: Upload release asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2.1.0
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: riscv-abi.pdf
-          asset_name: riscv-abi.pdf
-          asset_content_type: application/pdf
+          files: |
+            riscv-abi-manual.zip/riscv-abi.pdf
+            riscv-abi-manual.zip/riscv-abi.html
