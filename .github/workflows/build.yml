@@ -27,8 +27,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4.4.3
         with:
-          name: riscv-abi.pdf
-          path: riscv-abi.pdf
+          name: riscv-abi-manual.zip
+          path: |
+            build/riscv-abi.pdf
+            build/riscv-abi.html
 
   draft-release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -37,9 +39,6 @@ jobs:
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4.1.8
-        with:
-          name: riscv-abi.pdf
-          path: ./
 
       - name: Get current date
         id: date
@@ -47,24 +46,14 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2.1.0
         with:
           draft: true
-          tag_name: draft-${{ steps.date.outputs.RELEASE_DATE }}-${{ github.sha }}
-          release_name: Draft release ${{ steps.date.outputs.RELEASE_DATE }}
-          body: Latest snapshot (${{ github.sha }})
-
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: riscv-abi.pdf
-          asset_name: riscv-abi.pdf
-          asset_content_type: application/pdf
+          name: Draft release ${{ steps.date.outputs.RELEASE_DATE }}
+          body: Snapshot (${{ github.sha }})
+          files: |
+            riscv-abi-manual.zip/riscv-abi.pdf
+            riscv-abi-manual.zip/riscv-abi.html
 
   release:
     if: github.event_name == 'release' && github.event.action == 'created'
@@ -73,16 +62,11 @@ jobs:
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4.1.8
-        with:
-          name: riscv-abi.pdf
-          path: ./
 
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2.1.0
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: riscv-abi.pdf
-          asset_name: riscv-abi.pdf
-          asset_content_type: application/pdf
+          files: |
+            riscv-abi-manual.zip/riscv-abi.pdf
+            riscv-abi-manual.zip/riscv-abi.html
