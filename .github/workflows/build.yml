@@ -51,10 +51,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          draft: true
           tag_name: draft-${{ steps.date.outputs.RELEASE_DATE }}-${{ github.sha }}
           release_name: Draft release ${{ steps.date.outputs.RELEASE_DATE }}
           body: Latest snapshot (${{ github.sha }})
-          prerelease: true
 
       - name: Upload release asset
         id: upload-release-asset
